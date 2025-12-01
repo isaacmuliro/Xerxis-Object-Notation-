@@ -1,0 +1,246 @@
+State 0:
+          root ::= * object
+          root ::= * list
+          object ::= * LBRACE pair_list RBRACE
+          object ::= * LBRACE pair_list COMMA RBRACE
+          object ::= * LBRACE RBRACE
+          list ::= * LBRACKET value_list RBRACKET
+          list ::= * LBRACKET value_list COMMA RBRACKET
+          list ::= * LBRACKET RBRACKET
+
+                        LBRACE shift        5      
+                      LBRACKET shift        1      
+                          root accept
+                        object shift        12     
+                          list shift        11     
+
+State 1:
+          object ::= * LBRACE pair_list RBRACE
+          object ::= * LBRACE pair_list COMMA RBRACE
+          object ::= * LBRACE RBRACE
+          list ::= * LBRACKET value_list RBRACKET
+          list ::= LBRACKET * value_list RBRACKET
+          list ::= * LBRACKET value_list COMMA RBRACKET
+          list ::= LBRACKET * value_list COMMA RBRACKET
+          list ::= * LBRACKET RBRACKET
+          list ::= LBRACKET * RBRACKET
+          value_list ::= * value
+          value_list ::= * value_list COMMA value
+          value ::= * STRING
+          value ::= * NUMBER
+          value ::= * object
+          value ::= * list
+          value ::= * TRUE
+          value ::= * FALSE
+          value ::= * NULL_VAL
+
+                        LBRACE shift        5      
+                        STRING shift-reduce 14     value ::= STRING
+                      LBRACKET shift        1      
+                      RBRACKET shift-reduce 11     list ::= LBRACKET RBRACKET
+                        NUMBER shift-reduce 15     value ::= NUMBER
+                          TRUE shift-reduce 18     value ::= TRUE
+                         FALSE shift-reduce 19     value ::= FALSE
+                      NULL_VAL shift-reduce 20     value ::= NULL_VAL
+                        object shift-reduce 16     value ::= object
+                          list shift-reduce 17     value ::= list
+                    value_list shift        7      
+                         value shift-reduce 12     value_list ::= value
+
+State 2:
+          object ::= * LBRACE pair_list RBRACE
+          object ::= * LBRACE pair_list COMMA RBRACE
+          object ::= * LBRACE RBRACE
+          list ::= * LBRACKET value_list RBRACKET
+          list ::= * LBRACKET value_list COMMA RBRACKET
+          list ::= LBRACKET value_list COMMA * RBRACKET
+          list ::= * LBRACKET RBRACKET
+          value_list ::= value_list COMMA * value
+          value ::= * STRING
+          value ::= * NUMBER
+          value ::= * object
+          value ::= * list
+          value ::= * TRUE
+          value ::= * FALSE
+          value ::= * NULL_VAL
+
+                        LBRACE shift        5      
+                        STRING shift-reduce 14     value ::= STRING
+                      LBRACKET shift        1      
+                      RBRACKET shift-reduce 10     list ::= LBRACKET value_list COMMA RBRACKET
+                        NUMBER shift-reduce 15     value ::= NUMBER
+                          TRUE shift-reduce 18     value ::= TRUE
+                         FALSE shift-reduce 19     value ::= FALSE
+                      NULL_VAL shift-reduce 20     value ::= NULL_VAL
+                        object shift-reduce 16     value ::= object
+                          list shift-reduce 17     value ::= list
+                         value shift-reduce 13     value_list ::= value_list COMMA value
+
+State 3:
+          object ::= * LBRACE pair_list RBRACE
+          object ::= * LBRACE pair_list COMMA RBRACE
+          object ::= * LBRACE RBRACE
+          pair ::= IDENTIFIER COLON * value
+          list ::= * LBRACKET value_list RBRACKET
+          list ::= * LBRACKET value_list COMMA RBRACKET
+          list ::= * LBRACKET RBRACKET
+          value ::= * STRING
+          value ::= * NUMBER
+          value ::= * object
+          value ::= * list
+          value ::= * TRUE
+          value ::= * FALSE
+          value ::= * NULL_VAL
+
+                        LBRACE shift        5      
+                        STRING shift-reduce 14     value ::= STRING
+                      LBRACKET shift        1      
+                        NUMBER shift-reduce 15     value ::= NUMBER
+                          TRUE shift-reduce 18     value ::= TRUE
+                         FALSE shift-reduce 19     value ::= FALSE
+                      NULL_VAL shift-reduce 20     value ::= NULL_VAL
+                        object shift-reduce 16     value ::= object
+                          list shift-reduce 17     value ::= list
+                         value shift-reduce 8      pair ::= IDENTIFIER COLON value
+
+State 4:
+          object ::= * LBRACE pair_list RBRACE
+          object ::= * LBRACE pair_list COMMA RBRACE
+          object ::= * LBRACE RBRACE
+          pair ::= STRING COLON * value
+          list ::= * LBRACKET value_list RBRACKET
+          list ::= * LBRACKET value_list COMMA RBRACKET
+          list ::= * LBRACKET RBRACKET
+          value ::= * STRING
+          value ::= * NUMBER
+          value ::= * object
+          value ::= * list
+          value ::= * TRUE
+          value ::= * FALSE
+          value ::= * NULL_VAL
+
+                        LBRACE shift        5      
+                        STRING shift-reduce 14     value ::= STRING
+                      LBRACKET shift        1      
+                        NUMBER shift-reduce 15     value ::= NUMBER
+                          TRUE shift-reduce 18     value ::= TRUE
+                         FALSE shift-reduce 19     value ::= FALSE
+                      NULL_VAL shift-reduce 20     value ::= NULL_VAL
+                        object shift-reduce 16     value ::= object
+                          list shift-reduce 17     value ::= list
+                         value shift-reduce 7      pair ::= STRING COLON value
+
+State 5:
+          object ::= LBRACE * pair_list RBRACE
+          object ::= LBRACE * pair_list COMMA RBRACE
+          object ::= LBRACE * RBRACE
+          pair_list ::= * pair
+          pair_list ::= * pair_list COMMA pair
+          pair ::= * STRING COLON value
+          pair ::= * IDENTIFIER COLON value
+
+                        RBRACE shift-reduce 4      object ::= LBRACE RBRACE
+                        STRING shift        10     
+                    IDENTIFIER shift        9      
+                     pair_list shift        8      
+                          pair shift-reduce 5      pair_list ::= pair
+
+State 6:
+          object ::= LBRACE pair_list COMMA * RBRACE
+          pair_list ::= pair_list COMMA * pair
+          pair ::= * STRING COLON value
+          pair ::= * IDENTIFIER COLON value
+
+                        RBRACE shift-reduce 3      object ::= LBRACE pair_list COMMA RBRACE
+                        STRING shift        10     
+                    IDENTIFIER shift        9      
+                          pair shift-reduce 6      pair_list ::= pair_list COMMA pair
+
+State 7:
+          list ::= LBRACKET value_list * RBRACKET
+          list ::= LBRACKET value_list * COMMA RBRACKET
+          value_list ::= value_list * COMMA value
+
+                         COMMA shift        2      
+                      RBRACKET shift-reduce 9      list ::= LBRACKET value_list RBRACKET
+
+State 8:
+          object ::= LBRACE pair_list * RBRACE
+          object ::= LBRACE pair_list * COMMA RBRACE
+          pair_list ::= pair_list * COMMA pair
+
+                        RBRACE shift-reduce 2      object ::= LBRACE pair_list RBRACE
+                         COMMA shift        6      
+
+State 9:
+          pair ::= IDENTIFIER * COLON value
+
+                         COLON shift        3      
+
+State 10:
+          pair ::= STRING * COLON value
+
+                         COLON shift        4      
+
+State 11:
+      (1) root ::= list *
+
+                             $ reduce       1      root ::= list
+
+State 12:
+      (0) root ::= object *
+
+                             $ reduce       0      root ::= object
+
+----------------------------------------------------
+Symbols:
+The first-set of non-terminals is shown after the name.
+
+    0: $:
+    1: LBRACE
+    2: RBRACE
+    3: COMMA
+    4: STRING
+    5: COLON
+    6: IDENTIFIER
+    7: LBRACKET
+    8: RBRACKET
+    9: NUMBER
+   10: TRUE
+   11: FALSE
+   12: NULL_VAL
+   13: root: LBRACE LBRACKET
+   14: object: LBRACE
+   15: list: LBRACKET
+   16: pair_list: STRING IDENTIFIER
+   17: value_list: LBRACE STRING LBRACKET NUMBER TRUE FALSE NULL_VAL
+   18: pair: STRING IDENTIFIER
+   19: value: LBRACE STRING LBRACKET NUMBER TRUE FALSE NULL_VAL
+----------------------------------------------------
+Syntax-only Symbols:
+The following symbols never carry semantic content.
+
+$ LBRACE RBRACE COMMA COLON LBRACKET RBRACKET TRUE FALSE NULL_VAL root
+----------------------------------------------------
+Rules:
+   0: root ::= object.
+   1: root ::= list.
+   2: object ::= LBRACE pair_list RBRACE.
+   3: object ::= LBRACE pair_list COMMA RBRACE.
+   4: object ::= LBRACE RBRACE.
+   5: pair_list ::= pair.
+   6: pair_list ::= pair_list COMMA pair.
+   7: pair ::= STRING COLON value.
+   8: pair ::= IDENTIFIER COLON value.
+   9: list ::= LBRACKET value_list RBRACKET.
+  10: list ::= LBRACKET value_list COMMA RBRACKET.
+  11: list ::= LBRACKET RBRACKET.
+  12: value_list ::= value.
+  13: value_list ::= value_list COMMA value.
+  14: value ::= STRING.
+  15: value ::= NUMBER.
+  16: value ::= object.
+  17: value ::= list.
+  18: value ::= TRUE.
+  19: value ::= FALSE.
+  20: value ::= NULL_VAL.

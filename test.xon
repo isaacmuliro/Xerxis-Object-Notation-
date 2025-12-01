@@ -1,0 +1,9 @@
+{
+    server_name: "XonServer",   // Unquoted key
+    max_memory: 0xFF,           // Hex number (255)
+    features: [
+        "fast",
+        "simple",               // Trailing comma allowed!
+    ],
+    // Comments already work!
+}
