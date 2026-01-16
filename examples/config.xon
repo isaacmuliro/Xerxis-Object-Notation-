@@ -1,0 +1,26 @@
+{
+    // Application Configuration
+    app_name: "XonApp",
+    version: "1.0.0",
+    debug: true,
+    
+    server: {
+        host: "0.0.0.0",
+        port: 8080,
+        ssl: false,
+    },
+    
+    database: {
+        type: "postgresql",
+        host: "localhost",
+        port: 5432,
+        name: "xondb",
+        pool_size: 0x14,  // 20 in hex
+    },
+    
+    features: [
+        "auth",
+        "logging",
+        "caching",
+    ]
+}

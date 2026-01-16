@@ -1,0 +1,18 @@
+# Build artifacts
+xon
+*.o
+*.out
+build/xon.c
+build/xon.h
+build/xon.out
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

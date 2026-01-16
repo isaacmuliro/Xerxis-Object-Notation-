@@ -1,0 +1,23 @@
+{
+    project: {
+        name: "Xon Language",
+        metadata: {
+            author: "Isaac Muliro",
+            license: "MIT",
+            tags: ["parser", "config", "json"],
+        },
+        
+        build: {
+            compiler: "gcc",
+            flags: ["-Wall", "-Wextra", "-std=c99"],
+            output: "xon",
+        },
+        
+        dependencies: {
+            lemon: {
+                version: null,
+                required: true,
+            },
+        },
+    }
+}

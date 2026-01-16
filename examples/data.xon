@@ -1,0 +1,20 @@
+{
+    users: [
+        {
+            id: 1,
+            name: "Alice",
+            active: true,
+        },
+        {
+            id: 2,
+            name: "Bob",
+            active: false,
+        },
+    ],
+    
+    settings: {
+        theme: "dark",
+        language: "en",
+        notifications: true,
+    }
+}

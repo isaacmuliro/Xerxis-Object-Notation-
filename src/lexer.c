@@ -130,23 +130,6 @@ int xon_get_token(FILE *pFile, XonTokenData *pData, char **ppzErrMsg, int *pLine
         pData->sVal = strdup(buffer);
         return STRING; // We can reuse STRING token ID for simplicity in the parser!
     }
-    // if (isalpha(c)) {
-    //     char buffer[64];
-    //     int i = 0;
-    //     buffer[i++] = (char)c;
-    //     while ((c = fgetc(pFile)) != EOF && isalpha(c) && i < 63) {
-    //         buffer[i++] = (char)c;
-    //     }
-    //     buffer[i] = '\0';
-    //     if (c != EOF) ungetc(c, pFile);
-
-    //     if (strcmp(buffer, "true") == 0) return TRUE;
-    //     if (strcmp(buffer, "false") == 0) return FALSE;
-    //     if (strcmp(buffer, "null") == 0) return NULL_VAL;
-        
-    //     *ppzErrMsg = strdup("Unknown keyword");
-    //     return -1;
-    // }
 
     *ppzErrMsg = strdup("Unexpected character found");
     return -1;
