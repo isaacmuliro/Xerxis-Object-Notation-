@@ -6,6 +6,14 @@ build/xon.c
 build/xon.h
 build/xon.out
 
+# WASM generated files
+play.ground/xon.js
+play.ground/xon.wasm
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+
 # Editor files
 .vscode/
 .idea/
@@ -16,3 +24,9 @@ build/xon.out
 # OS files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,23 @@
+{
+  "name": "xon-playground",
+  "version": "1.0.0",
+  "description": "Xon Language Playground - WebAssembly Demo",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8000 -c-1 -o",
+    "build": "./build_wasm.sh",
+    "verify": "./verify.sh",
+    "dev": "npm run build && npm start"
+  },
+  "keywords": [
+    "xon",
+    "configuration",
+    "parser",
+    "wasm"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
