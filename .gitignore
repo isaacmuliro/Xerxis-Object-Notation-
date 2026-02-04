@@ -6,9 +6,9 @@ build/xon.c
 build/xon.h
 build/xon.out
 
-# WASM generated files
-play.ground/xon.js
-play.ground/xon.wasm
+# WASM generated files - ALLOW THESE (comment them out)
+# play.ground/xon.js
+# play.ground/xon.wasm
 
 # Node.js dependencies
 node_modules/

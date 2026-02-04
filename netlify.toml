@@ -1,0 +1,9 @@
+[build]
+  base = "play.ground"
+  command = "echo 'No build needed - serving pre-built files'"
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

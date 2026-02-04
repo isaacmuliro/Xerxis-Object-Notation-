@@ -1,0 +1,28 @@
+{
+  "name": "xon",
+  "version": "1.0.0",
+  "description": "Xon - A modern, developer-friendly configuration language",
+  "main": "index.js",
+  "types": "bindings/xon.d.ts",
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "xon",
+    "config",
+    "configuration",
+    "json",
+    "parser",
+    "native"
+  ],
+  "author": "Isaac Muliro",
+  "license": "MIT",
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^10.0.0"
+  }
+}
