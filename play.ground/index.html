@@ -11,7 +11,7 @@
     <style>
         * { 
             margin: 0; 
-            padding: 0; 
+            padding: 0;  
             box-sizing: border-box; 
         }
         
@@ -1040,20 +1040,23 @@ config: {
             statusEl.className = 'status error';
         });
 
+
         // File operations
+        
+        // File operations - FIXED SECTION
         function setFileModified(modified) {
             fileModified = modified;
             const statusEl = document.getElementById('file-status');
             statusEl.textContent = modified ? '• Modified' : '';
             statusEl.style.color = modified ? '#f57c00' : '#4caf50';
         }
-
+        
         function updateFilename(filename) {
             currentFile = filename;
             document.getElementById('filename').textContent = filename;
             setFileModified(false);
         }
-
+        
         function newFile() {
             if (fileModified && !confirm('You have unsaved changes. Create new file anyway?')) {
                 return;
@@ -1061,15 +1064,15 @@ config: {
             editor.setValue('{\n    // New Xon file\n    \n}');
             updateFilename('untitled.xon');
         }
-
+        
         function openFile() {
             document.getElementById('fileInput').click();
         }
-
+        
         function handleFileOpen(event) {
             const file = event.target.files[0];
             if (!file) return;
-
+        
             const reader = new FileReader();
             reader.onload = (e) => {
                 editor.setValue(e.target.result);
@@ -1078,29 +1081,37 @@ config: {
             };
             reader.readAsText(file);
         }
-
+        
+        // FIXED: Save just updates the filename, no download
         function saveFile() {
             document.getElementById('saveFilename').value = currentFile;
             document.getElementById('saveModal').classList.add('show');
         }
-
+        
         function closeSaveModal() {
             document.getElementById('saveModal').classList.remove('show');
         }
-
+        
+        // FIXED: confirmSave only updates filename, doesn't download
         function confirmSave() {
             const filename = document.getElementById('saveFilename').value.trim();
             if (!filename) return;
             
-            downloadFileWithName(filename);
-            updateFilename(filename);
+            // Just update the filename, don't download
+            updateFilename(filename.endsWith('.xon') ? filename : filename + '.xon');
             closeSaveModal();
+            
+            // Show save confirmation
+            const output = document.getElementById('output');
+            output.innerHTML = `<span style="color: #4caf50;">💾 File saved as: ${currentFile}</span>\n\nUse the Download button to save to your computer.`;
+            output.className = 'output success';
         }
-
+        
+        // Download button actually downloads the file
         function downloadFile() {
             downloadFileWithName(currentFile);
         }
-
+        
         function downloadFileWithName(filename) {
             const content = editor.getValue();
             const blob = new Blob([content], { type: 'text/plain' });
@@ -1112,8 +1123,88 @@ config: {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            setFileModified(false);
+            
+            // Show download confirmation
+            const output = document.getElementById('output');
+            output.innerHTML = `<span style="color: #4caf50;">⬇️ Downloaded: ${filename}</span>`;
+            output.className = 'output success';
         }
+        
+      
+        
+        // function setFileModified(modified) {
+        //     fileModified = modified;
+        //     const statusEl = document.getElementById('file-status');
+        //     statusEl.textContent = modified ? '• Modified' : '';
+        //     statusEl.style.color = modified ? '#f57c00' : '#4caf50';
+        // }
+
+        // function updateFilename(filename) {
+        //     currentFile = filename;
+        //     document.getElementById('filename').textContent = filename;
+        //     setFileModified(false);
+        // }
+
+        // function newFile() {
+        //     if (fileModified && !confirm('You have unsaved changes. Create new file anyway?')) {
+        //         return;
+        //     }
+        //     editor.setValue('{\n    // New Xon file\n    \n}');
+        //     updateFilename('untitled.xon');
+        // }
+
+        // function openFile() {
+        //     document.getElementById('fileInput').click();
+        // }
+
+        // function handleFileOpen(event) {
+        //     const file = event.target.files[0];
+        //     if (!file) return;
+
+        //     const reader = new FileReader();
+        //     reader.onload = (e) => {
+        //         editor.setValue(e.target.result);
+        //         updateFilename(file.name);
+        //         parseCode();
+        //     };
+        //     reader.readAsText(file);
+        // }
+
+        // function saveFile() {
+        //     document.getElementById('saveFilename').value = currentFile;
+        //     document.getElementById('saveModal').classList.add('show');
+        // }
+
+        // function closeSaveModal() {
+        //     document.getElementById('saveModal').classList.remove('show');
+        // }
+
+        // function confirmSave() {
+        //     const filename = document.getElementById('saveFilename').value.trim();
+        //     if (!filename) return;
+            
+        //     downloadFileWithName(filename);
+        //     updateFilename(filename);
+        //     closeSaveModal();
+        // }
+
+        // function downloadFile() {
+        //     downloadFileWithName(currentFile);
+        // }
+
+        // function downloadFileWithName(filename) {
+        //     const content = editor.getValue();
+        //     const blob = new Blob([content], { type: 'text/plain' });
+        //     const url = URL.createObjectURL(blob);
+        //     const a = document.createElement('a');
+        //     a.href = url;
+        //     a.download = filename.endsWith('.xon') ? filename : filename + '.xon';
+        //     document.body.appendChild(a);
+        //     a.click();
+        //     document.body.removeChild(a);
+        //     URL.revokeObjectURL(url);
+        //     setFileModified(false);
+        // }
 
         // Share functionality
         function shareCode() {
@@ -1628,792 +1719,3 @@ config: {
     </script>
 </body>
 </html>
-
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xon Playground</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a1a;
-            color: #e0e0e0;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* Holy Grail Layout */
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        
-        /* Header */
-        header {
-            background: #0d0d0d;
-            border-bottom: 1px solid #333;
-            padding: 0 20px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        header .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        header .logo i {
-            color: #888;
-            font-size: 1.5em;
-        }
-        
-        header h1 {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #fff;
-        }
-        
-        .status {
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.85em;
-            font-weight: 500;
-        }
-        
-        .status.loading { background: #3a3a00; color: #ffeb3b; }
-        .status.ready { background: #003a00; color: #4caf50; }
-        .status.error { background: #3a0000; color: #f44336; }
-        
-        /* Main Content Area */
-        .main {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            background: #0d0d0d;
-            border-right: 1px solid #333;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .nav-section {
-            padding: 20px 0;
-            border-bottom: 1px solid #333;
-        }
-        
-        .nav-section h3 {
-            font-size: 0.75em;
-            text-transform: uppercase;
-            color: #666;
-            padding: 0 20px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #aaa;
-            border-left: 3px solid transparent;
-        }
-        
-        .nav-item:hover {
-            background: #1a1a1a;
-            color: #fff;
-        }
-        
-        .nav-item.active {
-            background: #1a1a1a;
-            color: #fff;
-            border-left-color: #666;
-        }
-        
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* Content Area */
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .view {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .view.active {
-            display: flex;
-        }
-        
-        /* Playground View */
-        .playground-view {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr auto;
-            height: 100%;
-            gap: 1px;
-            background: #333;
-        }
-        
-        .panel {
-            background: #1a1a1a;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .panel-header {
-            background: #0d0d0d;
-            padding: 12px 20px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-        
-        .panel-header i {
-            color: #666;
-        }
-        
-        .panel-content {
-            flex: 1;
-            overflow: auto;
-        }
-        
-        .CodeMirror {
-            height: 100% !important;
-            font-size: 14px;
-            background: #1a1a1a !important;
-        }
-        
-        .output {
-            padding: 20px;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            color: #e0e0e0;
-        }
-        
-        .output.success { color: #4caf50; }
-        .output.error { color: #f44336; }
-        
-        /* Toolbar */
-        .toolbar {
-            grid-column: 1 / -1;
-            padding: 16px 20px;
-            background: #0d0d0d;
-            border-top: 1px solid #333;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        button {
-            background: #333;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        button:hover {
-            background: #444;
-            border-color: #555;
-        }
-        
-        button.primary {
-            background: #666;
-            border-color: #777;
-        }
-        
-        button.primary:hover {
-            background: #777;
-        }
-        
-        /* Examples View */
-        .examples-grid {
-            padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            overflow-y: auto;
-        }
-        
-        .example-card {
-            background: #0d0d0d;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .example-card:hover {
-            border-color: #555;
-            transform: translateY(-2px);
-        }
-        
-        .example-card h3 {
-            font-size: 1.1em;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .example-card h3 i {
-            color: #666;
-        }
-        
-        .example-card p {
-            color: #888;
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        
-        .example-card pre {
-            margin-top: 12px;
-            padding: 12px;
-            background: #1a1a1a;
-            border-radius: 4px;
-            font-size: 0.85em;
-            overflow-x: auto;
-            color: #aaa;
-        }
-        
-        /* Documentation View */
-        .docs-content {
-            padding: 40px;
-            max-width: 800px;
-            overflow-y: auto;
-        }
-        
-        .docs-content h2 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-        
-        .docs-content h3 {
-            font-size: 1.3em;
-            margin: 30px 0 15px;
-            color: #fff;
-        }
-        
-        .docs-content p {
-            line-height: 1.8;
-            margin-bottom: 15px;
-            color: #aaa;
-        }
-        
-        .docs-content code {
-            background: #0d0d0d;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'SF Mono', monospace;
-            color: #fff;
-        }
-        
-        .docs-content pre {
-            background: #0d0d0d;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 20px 0;
-            border: 1px solid #333;
-        }
-        
-        /* Settings View */
-        .settings-content {
-            padding: 40px;
-            max-width: 600px;
-            overflow-y: auto;
-        }
-        
-        .setting-group {
-            margin-bottom: 30px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #333;
-        }
-        
-        .setting-group:last-child {
-            border-bottom: none;
-        }
-        
-        .setting-group h3 {
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-        
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-        }
-        
-        .setting-item label {
-            color: #aaa;
-        }
-        
-        select {
-            background: #0d0d0d;
-            color: #fff;
-            border: 1px solid #333;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 60px;
-            }
-            
-            .nav-item span {
-                display: none;
-            }
-            
-            .nav-section h3 {
-                display: none;
-            }
-            
-            .playground-view {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1fr auto;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-
-        <header>
-            <div class="logo">
-                <i class="fas fa-code"></i>
-                <h1>Xon Playground</h1>
-            </div>
-            <div class="status loading" id="status">
-                <i class="fas fa-spinner fa-spin"></i> Loading parser...
-            </div>
-        </header>
-        
-      
-        <div class="main">
-           
-            <nav class="sidebar">
-                <div class="nav-section">
-                    <h3>Main</h3>
-                    <div class="nav-item active" onclick="switchView('playground')">
-                        <i class="fas fa-play-circle"></i>
-                        <span>Playground</span>
-                    </div>
-                    <div class="nav-item" onclick="switchView('examples')">
-                        <i class="fas fa-folder-open"></i>
-                        <span>Examples</span>
-                    </div>
-                </div>
-                
-                <div class="nav-section">
-                    <h3>Resources</h3>
-                    <div class="nav-item" onclick="switchView('docs')">
-                        <i class="fas fa-book"></i>
-                        <span>Documentation</span>
-                    </div>
-                    <div class="nav-item" onclick="switchView('settings')">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </div>
-                </div>
-                
-                <div class="nav-section">
-                    <h3>Links</h3>
-                    <div class="nav-item" onclick="window.open('https://github.com/yourusername/xon', '_blank')">
-                        <i class="fab fa-github"></i>
-                        <span>GitHub</span>
-                    </div>
-                </div>
-            </nav>
-            
-            
-            <div class="content">
-               
-                <div id="playground" class="view active">
-                    <div class="playground-view">
-                        <div class="panel">
-                            <div class="panel-header">
-                                <i class="fas fa-code"></i>
-                                <span>Input (.xon)</span>
-                            </div>
-                            <div class="panel-content">
-                                <textarea id="editor">{
-    // Server configuration
-    server_name: "XonPlayground",
-    version: "1.0.0",
-    max_memory: 0xFF,  // 255 MB in hex
-    
-    features: [
-        "comments",
-        "hex_numbers",
-        "trailing_commas",
-    ],
-    
-    database: {
-        host: "localhost",
-        port: 5432,
-        ssl: true,
-    }
-}</textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="panel">
-                            <div class="panel-header">
-                                <i class="fas fa-sitemap"></i>
-                                <span>Output (AST)</span>
-                            </div>
-                            <div class="panel-content">
-                                <div id="output" class="output">Press "Run" to parse the code...</div>
-                            </div>
-                        </div>
-                        
-                        <div class="toolbar">
-                            <button class="primary" onclick="parseCode()">
-                                <i class="fas fa-play"></i>
-                                Run
-                            </button>
-                            <button onclick="clearEditor()">
-                                <i class="fas fa-trash"></i>
-                                Clear
-                            </button>
-                            <button onclick="formatCode()">
-                                <i class="fas fa-magic"></i>
-                                Format
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-               
-                <div id="examples" class="view">
-                    <div class="examples-grid">
-                        <div class="example-card" onclick="loadExample('basic')">
-                            <h3>
-                                <i class="fas fa-cube"></i>
-                                Basic Types
-                            </h3>
-                            <p>Strings, numbers, booleans, and null values</p>
-                            <pre>{
-    string: "Hello",
-    number: 42,
-    bool: true
-}</pre>
-                        </div>
-                        
-                        <div class="example-card" onclick="loadExample('nested')">
-                            <h3>
-                                <i class="fas fa-layer-group"></i>
-                                Nested Objects
-                            </h3>
-                            <p>Complex nested data structures</p>
-                            <pre>{
-    app: {
-        settings: {
-            theme: "dark"
-        }
-    }
-}</pre>
-                        </div>
-                        
-                        <div class="example-card" onclick="loadExample('comments')">
-                            <h3>
-                                <i class="fas fa-comment"></i>
-                                Comments
-                            </h3>
-                            <p>Line and inline comments support</p>
-                            <pre>{
-    // Comment
-    name: "value"
-}</pre>
-                        </div>
-                        
-                        <div class="example-card" onclick="loadExample('hex')">
-                            <h3>
-                                <i class="fas fa-hashtag"></i>
-                                Hex Numbers
-                            </h3>
-                            <p>Hexadecimal number literals</p>
-                            <pre>{
-    color: 0xFF00FF,
-    flags: 0xDEAD
-}</pre>
-                        </div>
-                    </div>
-                </div>
-                
-               
-                <div id="docs" class="view">
-                    <div class="docs-content">
-                        <h2><i class="fas fa-book"></i> Xon Language Documentation</h2>
-                        
-                        <h3>What is Xon?</h3>
-                        <p>Xon is a modern configuration language that extends JSON with developer-friendly features like comments, trailing commas, and hexadecimal numbers.</p>
-                        
-                        <h3>Features</h3>
-                        <p>
-                            <strong>✓ Comments:</strong> Single-line <code>//</code> comments<br>
-                            <strong>✓ Trailing Commas:</strong> No more syntax errors from trailing commas<br>
-                            <strong>✓ Hex Numbers:</strong> Use <code>0xFF</code> notation<br>
-                            <strong>✓ JSON Compatible:</strong> Valid JSON is valid Xon
-                        </p>
-                        
-                        <h3>Example</h3>
-                        <pre>{
-    // Server configuration
-    server_name: "MyServer",
-    port: 8080,
-    max_connections: 0xFF,  // 255
-    
-    features: [
-        "api",
-        "websockets",
-    ]  // Trailing comma OK!
-}</pre>
-                        
-                        <h3>Syntax</h3>
-                        <p>Xon syntax is identical to JSON with these additions:</p>
-                        <pre>// Comments start with double slashes
-key: "value"  // Inline comments work too
-
-// Hex numbers
-color: 0xFF00FF
-
-// Trailing commas are allowed
-array: [1, 2, 3,]
-object: { a: 1, b: 2, }</pre>
-                    </div>
-                </div>
-                
-                
-                <div id="settings" class="view">
-                    <div class="settings-content">
-                        <h2><i class="fas fa-cog"></i> Settings</h2>
-                        
-                        <div class="setting-group">
-                            <h3>Editor</h3>
-                            <div class="setting-item">
-                                <label>Theme</label>
-                                <select id="editorTheme" onchange="changeEditorTheme()">
-                                    <option value="monokai">Monokai</option>
-                                    <option value="default">Default</option>
-                                    <option value="dracula">Dracula</option>
-                                </select>
-                            </div>
-                            <div class="setting-item">
-                                <label>Font Size</label>
-                                <select id="fontSize" onchange="changeFontSize()">
-                                    <option value="12">12px</option>
-                                    <option value="14" selected>14px</option>
-                                    <option value="16">16px</option>
-                                    <option value="18">18px</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="setting-group">
-                            <h3>Parser</h3>
-                            <div class="setting-item">
-                                <label>Auto-parse on change</label>
-                                <select id="autoParse">
-                                    <option value="true">Enabled</option>
-                                    <option value="false" selected>Disabled</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script src="xon.js"></script>
-    <script src="xon-wrapper.js"></script>
-    
-    <script>
-        let editor;
-        let xonParser;
-        
-        // Initialize CodeMirror
-        editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-            mode: 'javascript',
-            theme: 'monokai',
-            lineNumbers: true,
-            autoCloseBrackets: true,
-            matchBrackets: true,
-            indentUnit: 4,
-            tabSize: 4,
-        });
-        
-        // Load WASM module
-        XonModule().then(module => {
-            xonParser = new XonParser(module);
-            const statusEl = document.getElementById('status');
-            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Parser ready';
-            statusEl.className = 'status ready';
-        }).catch(err => {
-            const statusEl = document.getElementById('status');
-            statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed to load';
-            statusEl.className = 'status error';
-        });
-        
-        // View switching
-        function switchView(viewName) {
-            // Hide all views
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            // Show selected view
-            document.getElementById(viewName).classList.add('active');
-            
-            // Update nav
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-        }
-        
-        function parseCode() {
-            const code = editor.getValue();
-            const output = document.getElementById('output');
-            
-            if (!xonParser) {
-                output.textContent = '⏳ Parser still loading...';
-                output.className = 'output';
-                return;
-            }
-            
-            try {
-                const result = xonParser.parse(code);
-                
-                if (result.success) {
-                    output.textContent = '✅ Parse Successful!\n\n' + xonParser.formatAST(result.ast);
-                    output.className = 'output success';
-                } else {
-                    output.textContent = '❌ Parse Error\n\n' + result.error;
-                    output.className = 'output error';
-                }
-            } catch (e) {
-                output.textContent = '❌ Error\n\n' + e.message;
-                output.className = 'output error';
-            }
-        }
-        
-        function clearEditor() {
-            editor.setValue('');
-            document.getElementById('output').textContent = 'Editor cleared.';
-            document.getElementById('output').className = 'output';
-        }
-        
-        function formatCode() {
-            parseCode();
-        }
-        
-        const examples = {
-            basic: `{
-    string: "Hello World",
-    number: 42,
-    float: 3.14,
-    bool: true,
-    null_val: null
-}`,
-            nested: `{
-    app: {
-        name: "MyApp",
-        settings: {
-            theme: "dark",
-            language: "en"
-        }
-    }
-}`,
-            comments: `{
-    // This is a comment
-    name: "value",  // Inline comment
-    // Another comment
-    data: [1, 2, 3]
-}`,
-            hex: `{
-    color: 0xFF00FF,
-    memory: 0x1000,
-    flags: 0xDEADBEEF
-}`
-        };
-        
-        function loadExample(name) {
-            editor.setValue(examples[name]);
-            switchView('playground');
-            parseCode();
-        }
-        
-        function changeEditorTheme() {
-            const theme = document.getElementById('editorTheme').value;
-            editor.setOption('theme', theme);
-        }
-        
-        function changeFontSize() {
-            const size = document.getElementById('fontSize').value;
-            document.querySelector('.CodeMirror').style.fontSize = size + 'px';
-            editor.refresh();
-        }
-        
-        // Auto-parse on Ctrl+Enter
-        editor.setOption('extraKeys', {
-            'Ctrl-Enter': parseCode,
-            'Cmd-Enter': parseCode
-        });
-    </script>
-</body>
-</html> -->
