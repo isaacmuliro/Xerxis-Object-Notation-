@@ -23,12 +23,11 @@ fi
 echo "📝 Generating parser..."
 cd ..
 ./tools/lemon src/xon.lemon
-mv xon.c xon.h xon.out build/ 2>/dev/null || true
 cd play.ground
 
 # Compile to WebAssembly
 echo "🔨 Compiling to WASM..."
-emcc ../src/lexer.c ../build/xon.c \
+emcc ../src/xon_api.c ../src/lexer.c ../src/logger.c \
     -o xon.js \
     -s WASM=1 \
     -s EXPORTED_FUNCTIONS='["_malloc","_free"]' \
@@ -37,7 +36,7 @@ emcc ../src/lexer.c ../build/xon.c \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="XonModule" \
     -s INVOKE_RUN=0 \
-    -I../build -I../src \
+    -I../include -I../src \
     -O3 \
     --no-entry
 

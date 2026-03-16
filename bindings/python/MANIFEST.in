@@ -1,0 +1,5 @@
+include README.md
+include pyproject.toml
+include setup.py
+include xon.py
+include __init__.py

@@ -585,11 +585,11 @@
             <nav class="sidebar">
                 <div class="nav-section">
                     <h3>Main</h3>
-                    <div class="nav-item active" onclick="switchView('playground')">
+                    <div class="nav-item active" onclick="switchView('playground', this)">
                         <i class="fas fa-play-circle"></i>
                         <span>Playground</span>
                     </div>
-                    <div class="nav-item" onclick="switchView('examples')">
+                    <div class="nav-item" onclick="switchView('examples', this)">
                         <i class="fas fa-folder-open"></i>
                         <span>Examples</span>
                     </div>
@@ -609,11 +609,11 @@
                 
                 <div class="nav-section">
                     <h3>Resources</h3>
-                    <div class="nav-item" onclick="switchView('docs')">
+                    <div class="nav-item" onclick="switchView('docs', this)">
                         <i class="fas fa-book"></i>
                         <span>Documentation</span>
                     </div>
-                    <div class="nav-item" onclick="switchView('settings')">
+                    <div class="nav-item" onclick="switchView('settings', this)">
                         <i class="fas fa-cog"></i>
                         <span>Settings</span>
                     </div>
@@ -730,6 +730,10 @@
                             <button onclick="convertToJSON()">
                                 <i class="fas fa-exchange-alt"></i>
                                 To JSON
+                            </button>
+                            <button onclick="convertToXon()">
+                                <i class="fas fa-code"></i>
+                                To Xon
                             </button>
                             <button onclick="showMinified()">
                                 <i class="fas fa-compress-alt"></i>
@@ -1130,81 +1134,7 @@ config: {
             output.className = 'output success';
         }
         
-      
-        
-        // function setFileModified(modified) {
-        //     fileModified = modified;
-        //     const statusEl = document.getElementById('file-status');
-        //     statusEl.textContent = modified ? '• Modified' : '';
-        //     statusEl.style.color = modified ? '#f57c00' : '#4caf50';
-        // }
 
-        // function updateFilename(filename) {
-        //     currentFile = filename;
-        //     document.getElementById('filename').textContent = filename;
-        //     setFileModified(false);
-        // }
-
-        // function newFile() {
-        //     if (fileModified && !confirm('You have unsaved changes. Create new file anyway?')) {
-        //         return;
-        //     }
-        //     editor.setValue('{\n    // New Xon file\n    \n}');
-        //     updateFilename('untitled.xon');
-        // }
-
-        // function openFile() {
-        //     document.getElementById('fileInput').click();
-        // }
-
-        // function handleFileOpen(event) {
-        //     const file = event.target.files[0];
-        //     if (!file) return;
-
-        //     const reader = new FileReader();
-        //     reader.onload = (e) => {
-        //         editor.setValue(e.target.result);
-        //         updateFilename(file.name);
-        //         parseCode();
-        //     };
-        //     reader.readAsText(file);
-        // }
-
-        // function saveFile() {
-        //     document.getElementById('saveFilename').value = currentFile;
-        //     document.getElementById('saveModal').classList.add('show');
-        // }
-
-        // function closeSaveModal() {
-        //     document.getElementById('saveModal').classList.remove('show');
-        // }
-
-        // function confirmSave() {
-        //     const filename = document.getElementById('saveFilename').value.trim();
-        //     if (!filename) return;
-            
-        //     downloadFileWithName(filename);
-        //     updateFilename(filename);
-        //     closeSaveModal();
-        // }
-
-        // function downloadFile() {
-        //     downloadFileWithName(currentFile);
-        // }
-
-        // function downloadFileWithName(filename) {
-        //     const content = editor.getValue();
-        //     const blob = new Blob([content], { type: 'text/plain' });
-        //     const url = URL.createObjectURL(blob);
-        //     const a = document.createElement('a');
-        //     a.href = url;
-        //     a.download = filename.endsWith('.xon') ? filename : filename + '.xon';
-        //     document.body.appendChild(a);
-        //     a.click();
-        //     document.body.removeChild(a);
-        //     URL.revokeObjectURL(url);
-        //     setFileModified(false);
-        // }
 
         // Share functionality
         function shareCode() {
@@ -1241,14 +1171,20 @@ config: {
         }
 
         // View switching
-        function switchView(viewName) {
+        function switchView(viewName, clickedElement = null) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewName).classList.add('active');
             
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
+            if (!clickedElement) {
+                clickedElement = Array.from(document.querySelectorAll('.nav-item'))
+                    .find(item => (item.getAttribute('onclick') || '').includes(`switchView('${viewName}'`));
+            }
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
         }
 
         // Parser functions
@@ -1294,54 +1230,12 @@ config: {
             try {
                 const result = xonParser.parse(code);
                 if (result.success) {
-                    const formatted = formatXonCode(result.ast);
+                    const formatted = xonParser.formatXon(result.ast, 4);
                     editor.setValue(formatted);
                     setFileModified(true);
                 }
             } catch (e) {
                 alert('Cannot format code with syntax errors.');
-            }
-        }
-
-        function formatXonCode(ast, indent = 0) {
-            const pad = '    '.repeat(indent);
-            
-            switch (ast.type) {
-                case 'OBJECT':
-                    if (ast.pairs.length === 0) return '{}';
-                    let obj = '{\n';
-                    ast.pairs.forEach(({ key, value }, i) => {
-                        obj += `${pad}    ${key}: ${formatXonCode(value, indent + 1)}`;
-                        if (i < ast.pairs.length - 1) obj += ',';
-                        obj += '\n';
-                    });
-                    obj += `${pad}}`;
-                    return obj;
-                    
-                case 'LIST':
-                    if (ast.items.length === 0) return '[]';
-                    if (ast.items.length === 1 && ast.items[0].type !== 'OBJECT' && ast.items[0].type !== 'LIST') {
-                        return `[${formatXonCode(ast.items[0], 0)}]`;
-                    }
-                    let list = '[\n';
-                    ast.items.forEach((item, i) => {
-                        list += `${pad}    ${formatXonCode(item, indent + 1)}`;
-                        if (i < ast.items.length - 1) list += ',';
-                        list += '\n';
-                    });
-                    list += `${pad}]`;
-                    return list;
-                    
-                case 'STRING':
-                    return `"${ast.value}"`;
-                case 'NUMBER':
-                    return String(ast.value);
-                case 'BOOL':
-                    return String(ast.value);
-                case 'NULL':
-                    return 'null';
-                default:
-                    return '?';
             }
         }
 
@@ -1360,7 +1254,7 @@ config: {
             try {
                 const result = xonParser.parse(code);
                 if (result.success) {
-                    const json = astToJSON(result.ast);
+                    const json = xonParser.astToJSON(result.ast);
                     const formatted = JSON.stringify(json, null, 2);
                     
                     // Show in output
@@ -1378,23 +1272,31 @@ config: {
             }
         }
 
-        function astToJSON(ast) {
-            switch (ast.type) {
-                case 'OBJECT':
-                    const obj = {};
-                    ast.pairs.forEach(({ key, value }) => {
-                        obj[key] = astToJSON(value);
-                    });
-                    return obj;
-                case 'LIST':
-                    return ast.items.map(item => astToJSON(item));
-                case 'STRING':
-                case 'NUMBER':
-                case 'BOOL':
-                case 'NULL':
-                    return ast.value;
-                default:
-                    return null;
+        function convertToXon() {
+            const code = editor.getValue();
+            try {
+                const jsonValue = JSON.parse(code);
+                const ast = xonParser.jsonToAst(jsonValue);
+                const formattedXon = xonParser.formatXon(ast, 4);
+                editor.setValue(formattedXon);
+                setFileModified(true);
+
+                const output = document.getElementById('output');
+                output.innerHTML = `<span style="color: #4caf50;">Xon Conversion:</span>\n\nConverted JSON to Xon and updated the editor.`;
+                output.className = 'output success';
+            } catch (e) {
+                alert('Editor does not contain valid JSON.');
+            }
+        }
+
+        function showConverter() {
+            const code = editor.getValue().trim();
+            if (!code) return;
+            try {
+                JSON.parse(code);
+                convertToXon();
+            } catch (_) {
+                convertToJSON();
             }
         }
 
@@ -1403,7 +1305,7 @@ config: {
             try {
                 const result = xonParser.parse(code);
                 if (result.success) {
-                    const json = astToJSON(result.ast);
+                    const json = xonParser.astToJSON(result.ast);
                     const minified = JSON.stringify(json);
                     
                     const output = document.getElementById('output');
@@ -1506,8 +1408,8 @@ config: {
     server_name: "Production",  // Inline comment
     
     /* 
-       Multi-line comments not supported yet,
-       but single-line comments work great!
+       Multi-line comments are supported now,
+       just like single-line comments.
     */
     
     // Configuration sections

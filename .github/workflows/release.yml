@@ -1,0 +1,142 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Ensure scripts executable
+        run: |
+          chmod +x build.sh
+          chmod +x scripts/run_tests.sh
+
+      - name: Run test suite
+        run: ./scripts/run_tests.sh
+
+      - name: Build npm package preview
+        run: npm pack --dry-run
+
+      - name: Build Python distributions
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+          python -m build --wheel bindings/python --outdir dist-python
+          python -m twine check dist-python/*
+
+      - name: Build VS Code extension package
+        working-directory: vscode-xon
+        run: |
+          npm install
+          npx @vscode/vsce package
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist-python/*
+            vscode-xon/*.vsix
+
+  publish-npm-core:
+    needs: build-artifacts
+    if: ${{ secrets.NPM_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for npm publish
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish @xerxisfy/xon
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  publish-npm-lsp:
+    needs: build-artifacts
+    if: ${{ secrets.NPM_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for npm publish
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish @xerxisfy/xon-language-server
+        working-directory: xon-language-server
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  publish-pypi:
+    needs: build-artifacts
+    if: ${{ secrets.PYPI_API_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build Python distributions
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+          python -m build --wheel bindings/python --outdir dist-python
+          python -m twine check dist-python/*
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist-python/*
+
+  publish-vscode:
+    needs: build-artifacts
+    if: ${{ secrets.VSCE_PAT != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Publish VS Code extension
+        working-directory: vscode-xon
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          npm install
+          npx @vscode/vsce publish -p "$VSCE_PAT"

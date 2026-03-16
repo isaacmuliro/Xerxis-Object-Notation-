@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Ensure scripts executable
+        run: |
+          chmod +x build.sh
+          chmod +x scripts/run_tests.sh
+
+      - name: Build and test (C + Python)
+        run: ./scripts/run_tests.sh
+
+      - name: Build Node addon and run npm tests
+        run: |
+          npm install
+          npm test

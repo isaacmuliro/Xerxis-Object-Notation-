@@ -28,10 +28,15 @@ Napi::Value ConvertToJS(Napi::Env env, const XonValue* value) {
         case XON_TYPE_OBJECT: {
             Napi::Object obj = Napi::Object::New(env);
             size_t size = xon_object_size(value);
-            
-            // We need to iterate through object keys
-            // For now, we'll skip proper key iteration (requires API enhancement)
-            // This is a placeholder that would need the actual key enumeration API
+
+            for (size_t i = 0; i < size; i++) {
+                const char* key = xon_object_key_at(value, i);
+                XonValue* item = xon_object_value_at(value, i);
+                if (key) {
+                    obj.Set(key, ConvertToJS(env, item));
+                }
+            }
+
             return obj;
         }
         

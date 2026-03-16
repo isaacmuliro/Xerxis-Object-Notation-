@@ -1,9 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 echo "🔨 Building Xon Library and CLI..."
 
 # Generate parser
 ./tools/lemon src/xon.lemon
-mv xon.c xon.h xon.out build/ 2>/dev/null || true
 
 # Detect OS for shared library extension
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -16,15 +20,15 @@ fi
 
 # Build shared library
 echo "📚 Building libxon.${LIB_EXT}..."
-gcc $LIB_FLAGS -Wall -Wextra -std=c99 -Ibuild -Iinclude \
+gcc $LIB_FLAGS -Wall -Wextra -std=c99 -Iinclude \
     -o libxon.${LIB_EXT} \
-    src/xon_api.c src/lexer.c
+    src/xon_api.c src/lexer.c src/logger.c
 
 # Build CLI tool
 echo "🔧 Building xon CLI..."
-gcc -Wall -Wextra -std=c99 -Ibuild \
+gcc -Wall -Wextra -std=c99 -Iinclude \
     -o xon \
-    src/main.c src/lexer.c
+    src/main.c src/xon_api.c src/lexer.c src/logger.c
 
 # Build example program
 echo "📝 Building example program..."

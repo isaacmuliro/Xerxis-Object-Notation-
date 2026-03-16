@@ -1,50 +1,96 @@
 # Xon Grammar Specification
 
-## EBNF Notation
+Xon is JSON-compatible for data literals and extends that shape with an optional runtime expression layer.
+
+## Core Data
 
 ```ebnf
 root       ::= object | list
-
 object     ::= '{' pair_list? '}'
 pair_list  ::= pair (',' pair)* ','?
-pair       ::= key ':' value
+pair       ::= key ':' expr
+            | 'let' IDENTIFIER '=' expr
+            | 'const' IDENTIFIER '=' expr
 key        ::= STRING | IDENTIFIER
 
 list       ::= '[' value_list? ']'
 value_list ::= value (',' value)* ','?
 
-value      ::= STRING | NUMBER | BOOL | NULL | object | list
-
-STRING     ::= '"' char* '"'
-NUMBER     ::= DECIMAL | HEXADECIMAL
-DECIMAL    ::= '-'? [0-9]+ ('.' [0-9]+)?
-HEXADECIMAL ::= '0' [xX] [0-9a-fA-F]+
-BOOL       ::= 'true' | 'false'
-NULL       ::= 'null'
-IDENTIFIER ::= [a-zA-Z_][a-zA-Z0-9_]*
+value      ::= STRING
+            | NUMBER
+            | TRUE
+            | FALSE
+            | NULL_VAL
+            | object
+            | list
+            | expr
 ```
 
-## Grammar Details
+`STRING`, `NUMBER`, `TRUE`, `FALSE`, and `NULL_VAL` are parsed as literal values.
 
-### Terminals
-- `LBRACE` - `{`
-- `RBRACE` - `}`
-- `LBRACKET` - `[`
-- `RBRACKET` - `]`
-- `COLON` - `:`
-- `COMMA` - `,`
-- `STRING` - Quoted text
-- `IDENTIFIER` - Unquoted keys
-- `NUMBER` - Decimal or hex numbers
-- `TRUE` - Boolean true
-- `FALSE` - Boolean false
-- `NULL_VAL` - Null value
+## Runtime Expressions (Round-1)
 
-### Non-Terminals
-- `root` - Top-level entry point
-- `object` - Key-value pairs
-- `list` - Ordered collections
-- `pair` - Key-value association
-- `value` - Any valid data type
+```ebnf
+expr            ::= ternary_expr
+ternary_expr    ::= nullish_expr
+                 | nullish_expr '?' ternary_expr ':' ternary_expr
+                 | 'if' '(' expr ')' ternary_expr 'else' ternary_expr
 
-See `src/xon.lemon` for the complete Lemon grammar specification.
+nullish_expr    ::= or_expr
+                 | or_expr '??' or_expr
+
+or_expr         ::= or_expr '||' and_expr | and_expr
+and_expr        ::= and_expr '&&' eq_expr | eq_expr
+
+eq_expr         ::= eq_expr '==' rel_expr | eq_expr '!=' rel_expr | rel_expr
+rel_expr        ::= rel_expr '<' add_expr
+                 | rel_expr '<=' add_expr
+                 | rel_expr '>' add_expr
+                 | rel_expr '>=' add_expr
+                 | add_expr
+
+add_expr        ::= add_expr '+' mul_expr
+                 | add_expr '-' mul_expr
+                 | mul_expr
+
+mul_expr        ::= mul_expr '*' unary_expr
+                 | mul_expr '/' unary_expr
+                 | mul_expr '%' unary_expr
+                 | unary_expr
+
+unary_expr      ::= '!' unary_expr
+                 | '+' unary_expr
+                 | '-' unary_expr
+                 | postfix_expr
+
+postfix_expr    ::= postfix_expr '(' arg_list_opt ')'
+                 | postfix_expr '.' IDENTIFIER
+                 | primary_expr
+
+primary_expr    ::= IDENTIFIER
+                 | STRING
+                 | NUMBER
+                 | TRUE
+                 | FALSE
+                 | NULL_VAL
+                 | object
+                 | list
+                 | '(' expr ')'
+                 | '(' param_list_opt ')' '=>' expr
+
+param_list_opt  ::= /* empty */ | param_list
+param_list      ::= IDENTIFIER (',' IDENTIFIER)*
+arg_list_opt    ::= /* empty */ | arg_list
+arg_list        ::= expr (',' expr)*
+```
+
+## Comments
+
+- `//` line comments
+- `#` line comments
+- `/* ... */` block comments
+
+## Notes
+
+- `src/xon.lemon` contains the full parser grammar and parser actions.
+- `src/xon_api.c` enforces evaluation-time precedence and type errors while evaluating expression trees.
