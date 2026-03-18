@@ -1,18 +1,51 @@
-# 🌐 Xon Playground
+# Xon Playground Deploy Instructions
 
-## Build & Run
+## 1) Build Assets
+
+```bash
 cd ~/xon/play.ground
-
-# Clean build
-rm -rf node_modules xon.js xon.wasm
-
-# Fresh install
 npm install
+npm run build
+```
 
-# Build and run
-npm run dev
+## 2) Choose Runtime Mode
 
-## Deploy to Netlify
+### A. Static-only (browser WASM parse + eval)
 
-1. Drag the `playground/` folder to Netlify
-2. Done! ✅
+Deploy only `play.ground/` files to Netlify/Vercel/GitHub Pages.
+
+UI mode to use: `Settings -> Parser -> Execution mode -> Browser (WASM parse+eval)`.
+
+### B. Optional sandbox runtime (API)
+
+Run the sandbox server:
+
+```bash
+cd ~/xon/play.ground
+npm run start:sandbox
+```
+
+This serves:
+
+- UI at `http://localhost:8000`
+- API at `http://localhost:8000/api/eval`
+
+UI mode to use: `Settings -> Parser -> Execution mode -> Sandbox API (eval)`.
+
+## 3) Health Check
+
+```bash
+curl -s http://localhost:8000/api/healthz
+```
+
+Expect `{ "ok": true, ... }`.
+
+## 4) Eval API Smoke Test
+
+```bash
+curl -s http://localhost:8000/api/eval \
+  -H 'content-type: application/json' \
+  --data '{"code":"{ total: max(1, 2, 3) }"}'
+```
+
+Expect `{ "ok": true, "result": ... }`.
